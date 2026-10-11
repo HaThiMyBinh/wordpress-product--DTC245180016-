@@ -110,18 +110,17 @@ docker-compose logs --tail=100
 
 ## 8. Truy cập website và công cụ quản trị
 
-Thay `IP_SERVER` bằng địa chỉ IP thực tế của Ubuntu Server.
+Thay `192.168.101.128` bằng địa chỉ IP thực tế của Ubuntu Server nếu IP thay đổi.
 
 | Dịch vụ | Địa chỉ truy cập |
 |---|---|
-| WordPress | `http://IP_SERVER:8092` |
-| phpMyAdmin | `http://IP_SERVER:8093` |
-| Prometheus | Theo cổng được cấu hình |
-| Grafana | Theo cổng được cấu hình |
-| Nginx HTTPS | Theo cổng HTTPS được cấu hình |
+| WordPress | http://192.168.101.128:8092 |
+| phpMyAdmin | http://192.168.101.128:8093 |
+| WordPress qua Nginx HTTPS | https://192.168.101.128:8443 |
+| Prometheus | http://192.168.101.128:9092 |
+| Grafana | http://192.168.101.128:3001 |
 
-Các cổng của Prometheus, Grafana và Nginx cần được đối chiếu với cấu hình thực tế trước khi sử dụng.
-
+Chứng chỉ HTTPS hiện là chứng chỉ tự ký (self-signed), vì vậy trình duyệt có thể hiển thị cảnh báo bảo mật trong môi trường thử nghiệm.
 ## 9. Bảo mật hệ thống
 
 - Không công khai mật khẩu hoặc thông tin xác thực.
