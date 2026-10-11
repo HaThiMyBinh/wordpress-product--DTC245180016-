@@ -1,0 +1,58 @@
+version: "3.3"
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: ${WP_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - backend
+
+  wordpress:
+    image: wordpress:php8.3-apache
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+    ports:
+      - "8092:80"
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - frontend
+      - backend
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    ports:
+      - "8093:80"
+    depends_on:
+      - db
+    networks:
+      - frontend
+      - backend
+
+volumes:
+  db_data:
+  wordpress_data:
+
+networks:
+  frontend:
+  backend:
+    internal: true
