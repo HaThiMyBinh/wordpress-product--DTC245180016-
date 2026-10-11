@@ -4,3 +4,21 @@
 *.pem
 *.key
 .DS_Store
+# HTTPS private keys and certificates
+nginx/certs/
+*.crt
+*.pem
+*.key
+
+# Backup files
+*.bak
+*.bak.*
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+docker-compose.yml.bak2
