@@ -47,7 +47,18 @@ services:
     networks:
       - frontend
       - backend
-
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - wordpress
+    ports:
+      - "8443:8443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - frontend
 volumes:
   db_data:
   wordpress_data:
