@@ -30,6 +30,7 @@ services:
       - "8092:80"
     volumes:
       - wordpress_data:/var/www/html
+      - ./php/security.ini:/usr/local/etc/php/conf.d/security.ini:ro
     networks:
       - frontend
       - backend
