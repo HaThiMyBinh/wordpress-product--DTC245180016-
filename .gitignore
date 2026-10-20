@@ -22,3 +22,6 @@ nginx/certs/
 # OS files
 .DS_Store
 docker-compose.yml.bak2
+
+# Database backups
+backups/
