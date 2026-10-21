@@ -72,6 +72,19 @@ services:
     networks:
       - frontend
 
+  mysqld-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: wordpressproduct_mysqld_exporter
+    command:
+      - --config.my-cnf=/cfg/.my.cnf
+    depends_on:
+      - db
+    networks:
+      - backend
+      - frontend
+    volumes:
+      - ./monitoring/mysql-exporter/.my.cnf:/cfg/.my.cnf:ro
+    restart: unless-stopped
 
   blackbox-exporter:
     image: prom/blackbox-exporter:latest

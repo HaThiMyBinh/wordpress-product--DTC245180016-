@@ -19,8 +19,12 @@ scrape_configs:
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: 172.27.0.3:9115
+        replacement: blackbox-exporter:9115
 
   - job_name: cadvisor
     static_configs:
-      - targets: ["172.27.0.4:8080"]
+      - targets: ["cadvisor:8080"]
+
+  - job_name: mysql
+    static_configs:
+      - targets: ["mysqld-exporter:9104"]

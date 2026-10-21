@@ -25,3 +25,5 @@ docker-compose.yml.bak2
 
 # Database backups
 backups/
+monitoring/mysql-exporter/.my.cnf
+.backup-before-exporter/
