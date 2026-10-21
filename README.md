@@ -2,32 +2,34 @@
 
 ## 1. Giới thiệu dự án
 
-Dự án xây dựng website quảng bá sản phẩm bằng WordPress trên Ubuntu Server. Hệ thống sử dụng Docker và Docker Compose để triển khai các dịch vụ, giúp việc cài đặt, quản lý và vận hành thuận tiện hơn.
+Dự án xây dựng website quảng bá sản phẩm bằng WordPress trên Ubuntu Server. Hệ thống sử dụng Docker và Docker Compose để triển khai, quản lý và vận hành các dịch vụ.
 
-Ngoài chức năng giới thiệu sản phẩm, dự án hướng đến việc tăng cường bảo mật, giám sát hoạt động và quản lý nhật ký hệ thống.
+Ngoài chức năng giới thiệu sản phẩm, dự án còn triển khai HTTPS, bảo mật, giám sát hệ thống và quản lý nhật ký.
 
 ## 2. Công nghệ sử dụng
 
 - **Ubuntu Server:** Hệ điều hành triển khai.
-- **Docker:** Đóng gói và chạy các dịch vụ trong container.
-- **Docker Compose:** Quản lý các dịch vụ của hệ thống.
-- **WordPress:** Xây dựng và quản lý nội dung website.
-- **MySQL 8.0:** Lưu trữ dữ liệu website.
-- **phpMyAdmin:** Quản lý cơ sở dữ liệu thông qua giao diện web.
-- **Nginx:** Reverse proxy và tiếp nhận kết nối HTTPS.
-- **Prometheus:** Thu thập và lưu trữ số liệu giám sát.
-- **Grafana:** Hiển thị dashboard giám sát.
-- **Loki và Promtail:** Thu thập, lưu trữ và truy vấn nhật ký hệ thống.
+- **Docker và Docker Compose:** Đóng gói và quản lý dịch vụ.
+- **WordPress:** Xây dựng website.
+- **MySQL 8.0:** Lưu trữ dữ liệu.
+- **phpMyAdmin:** Quản lý cơ sở dữ liệu.
+- **Nginx:** Reverse proxy và HTTPS.
+- **Prometheus:** Thu thập số liệu giám sát.
+- **Blackbox Exporter:** Kiểm tra khả dụng website qua HTTPS.
+- **cAdvisor:** Giám sát tài nguyên container.
+- **MySQL Exporter:** Cung cấp metric của MySQL.
+- **Grafana:** Hiển thị dashboard.
+- **Loki và Promtail:** Thu thập và truy vấn log.
 
 ## 3. Chức năng hệ thống
 
 - Hiển thị thông tin và hình ảnh sản phẩm.
-- Quản lý nội dung website bằng WordPress.
+- Quản lý nội dung bằng WordPress.
 - Lưu trữ dữ liệu trong MySQL.
 - Quản lý cơ sở dữ liệu bằng phpMyAdmin.
-- Cấu hình Nginx và HTTPS để tăng cường bảo mật truy cập.
-- Giám sát hệ thống bằng Prometheus và Grafana.
-- Thu thập, quản lý và truy vấn log bằng Loki và Promtail.
+- Sử dụng Nginx làm reverse proxy HTTPS.
+- Giám sát WordPress, container và MySQL.
+- Thu thập, lưu trữ và truy vấn log bằng Loki và Promtail.
 
 ## 4. Cấu trúc thư mục
 
@@ -37,26 +39,29 @@ wordpress-product/
 ├── .env.example
 ├── .gitignore
 ├── README.md
+├── blackbox/
+├── loki/
 ├── nginx/
 │   ├── conf.d/
 │   └── certs/
+├── php/
 ├── prometheus/
-├── grafana/
-├── loki/
 ├── promtail/
-└── mysql/
+└── monitoring/
+    └── mysql-exporter/
+        └── .my.cnf
 ```
 
-Các thư mục cấu hình cần được bổ sung theo cấu hình triển khai thực tế của dự án.
+File `monitoring/mysql-exporter/.my.cnf` chỉ được tạo trên máy triển khai và không được đưa lên GitHub vì chứa thông tin xác thực.
 
 ## 5. Yêu cầu môi trường
 
 - Ubuntu Server.
 - Docker.
 - Docker Compose.
-- Máy tính có thể kết nối đến địa chỉ IP của máy chủ.
+- Máy tính có thể kết nối đến địa chỉ IP máy chủ.
 
-Kiểm tra phiên bản Docker:
+Kiểm tra phiên bản:
 
 ```bash
 docker --version
@@ -65,16 +70,35 @@ docker-compose --version
 
 ## 6. Cấu hình môi trường
 
-Tạo file `.env` tại thư mục gốc dự án từ file cấu hình mẫu `.env.example`.
+Tạo file `.env` từ file mẫu:
 
 ```bash
 cp .env.example .env
 nano .env
 ```
 
-Điền các biến môi trường cần thiết, bao gồm mật khẩu MySQL và mật khẩu quản trị Grafana nếu được sử dụng trong cấu hình.
+Điền các biến môi trường cần thiết, bao gồm thông tin MySQL và Grafana nếu được sử dụng.
 
-**Lưu ý:** Không sử dụng mật khẩu mẫu trong môi trường thực tế. Không tải file `.env` chứa mật khẩu thật lên GitHub.
+Tạo file cấu hình MySQL Exporter:
+
+```bash
+mkdir -p monitoring/mysql-exporter
+nano monitoring/mysql-exporter/.my.cnf
+```
+
+Nội dung mẫu:
+
+```ini
+[client]
+user=mysqld_exporter
+password=MAT_KHAU_EXPORTER
+host=db
+port=3306
+```
+
+Tài khoản `mysqld_exporter` chỉ nên được cấp các quyền cần thiết để đọc metric MySQL.
+
+**Lưu ý:** Không đưa `.env`, `.my.cnf` hoặc mật khẩu thật lên GitHub.
 
 ## 7. Khởi chạy hệ thống
 
@@ -84,13 +108,13 @@ Di chuyển vào thư mục dự án:
 cd ~/wordpress-product
 ```
 
-Kiểm tra cấu hình Docker Compose:
+Kiểm tra cấu hình:
 
 ```bash
 docker-compose config
 ```
 
-Chạy các dịch vụ:
+Khởi chạy các dịch vụ chính:
 
 ```bash
 docker-compose up -d
@@ -102,15 +126,22 @@ Kiểm tra trạng thái container:
 docker-compose ps
 ```
 
-Xem nhật ký dịch vụ khi cần kiểm tra lỗi:
+Xem log:
 
 ```bash
 docker-compose logs --tail=100
 ```
 
+Kiểm tra cấu hình Prometheus:
+
+```bash
+docker exec wordpressproduct_prometheus \
+  promtool check config /etc/prometheus/prometheus.yml
+```
+
 ## 8. Truy cập website và công cụ quản trị
 
-Thay `192.168.101.128` bằng địa chỉ IP thực tế của Ubuntu Server nếu IP thay đổi.
+Thay `192.168.101.128` bằng địa chỉ IP thực tế của Ubuntu Server nếu cần.
 
 | Dịch vụ | Địa chỉ truy cập |
 |---|---|
@@ -119,38 +150,110 @@ Thay `192.168.101.128` bằng địa chỉ IP thực tế của Ubuntu Server n�
 | WordPress qua Nginx HTTPS | https://192.168.101.128:8443 |
 | Prometheus | http://192.168.101.128:9092 |
 | Grafana | http://192.168.101.128:3001 |
+| Loki API | http://192.168.101.128:3100 |
 
-Chứng chỉ HTTPS hiện là chứng chỉ tự ký (self-signed), vì vậy trình duyệt có thể hiển thị cảnh báo bảo mật trong môi trường thử nghiệm.
+Chứng chỉ HTTPS hiện là chứng chỉ tự ký nên trình duyệt có thể hiển thị cảnh báo trong môi trường thử nghiệm.
+
 ## 9. Bảo mật hệ thống
 
 - Không công khai mật khẩu hoặc thông tin xác thực.
-- Không đưa file `.env` chứa dữ liệu nhạy cảm lên repository.
-- Chỉ công khai những cổng dịch vụ cần thiết.
-- Sử dụng HTTPS khi cấu hình Nginx hoàn tất.
-- Kiểm tra quyền truy cập và trạng thái các container định kỳ.
+- Không đưa `.env` và `.my.cnf` lên repository.
+- Chỉ công khai các cổng cần thiết.
+- Sử dụng HTTPS cho truy cập website.
+- Sử dụng mạng `backend` ở chế độ internal cho cơ sở dữ liệu.
+- MySQL Exporter chỉ được dùng tài khoản có quyền giới hạn.
+- Kiểm tra trạng thái container định kỳ.
+- Không đưa thư mục backup lên GitHub.
 
 ## 10. Giám sát hệ thống
 
 ### Prometheus và Grafana
 
-Prometheus được sử dụng để thu thập các số liệu giám sát theo cấu hình. Grafana cung cấp giao diện dashboard giúp theo dõi tình trạng hệ thống.
+Prometheus thu thập số liệu từ các target:
+
+- Prometheus.
+- WordPress qua Blackbox Exporter.
+- cAdvisor.
+- MySQL Exporter.
+
+Các truy vấn PromQL đã sử dụng:
+
+```promql
+up
+```
+
+Truy vấn này kiểm tra trạng thái các target. Giá trị `1` cho biết target đang hoạt động.
+
+```promql
+mysql_up
+```
+
+Truy vấn này kiểm tra trạng thái kết nối của MySQL Exporter. Giá trị `1` cho biết exporter kết nối được đến MySQL.
+
+Grafana sử dụng Prometheus làm nguồn dữ liệu và hiển thị:
+
+- WordPress Website Availability.
+- cAdvisor Status.
+- Container CPU Usage.
+- Container Memory Usage.
+- MySQL Exporter Status.
 
 ### Loki và Promtail
 
-Promtail được sử dụng để thu thập log và gửi đến Loki. Người quản trị có thể sử dụng LogQL để truy vấn log phục vụ kiểm tra và xử lý sự cố.
+Promtail thu thập log container và gửi đến Loki. Grafana sử dụng Loki làm nguồn dữ liệu log để truy vấn bằng LogQL.
 
-Các nguồn dữ liệu, dashboard và truy vấn cụ thể phụ thuộc vào cấu hình đã triển khai.
+Các truy vấn LogQL đã sử dụng:
+
+```logql
+{service=~".+"}
+```
+
+Truy vấn toàn bộ log của các service.
+
+```logql
+{service=~".+"} |~ "(?i)error|warn"
+```
+
+Lọc các log có nội dung `error` hoặc `warn`.
+
+```logql
+{service="loki"}
+```
+
+Lọc log riêng của Loki.
+
+Trong môi trường kiểm thử, Grafana, Loki và Promtail có thể chạy dưới một stack monitoring riêng nếu không được khai báo trong `docker-compose.yml` chính của dự án.
+
+### Kiểm tra monitoring
+
+```bash
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+```
+
+Kiểm tra các target trên giao diện:
+
+```text
+http://192.168.101.128:9092/targets
+```
+
+Các target hợp lệ cần có trạng thái `UP`.
 
 ## 11. Lịch sử triển khai
 
-Dự án được chia thành ba mốc công việc chính:
+Dự án được triển khai qua các mốc chính:
 
-1. **Commit 1 – Website và bảo mật:** Hoàn thiện cấu hình WordPress, MySQL, phpMyAdmin, Nginx và HTTPS.
-2. **Commit 2 – Giám sát:** Bổ sung cấu hình Prometheus và Grafana.
-3. **Commit 3 – Quản lý log:** Bổ sung cấu hình Loki, Promtail và các truy vấn LogQL.
+1. **Website và cơ sở dữ liệu:** Hoàn thiện WordPress, MySQL và phpMyAdmin.
+2. **Reverse proxy và HTTPS:** Bổ sung Nginx, chứng chỉ HTTPS và security headers.
+3. **Monitoring cơ bản:** Bổ sung Prometheus, Blackbox Exporter và cAdvisor.
+4. **Quản lý log:** Bổ sung Loki, Promtail và truy vấn LogQL.
+5. **Hardening:** Bổ sung cấu hình bảo mật PHP, Nginx và sửa Prometheus target.
+6. **Giám sát MySQL:** Bổ sung MySQL Exporter và metric `mysql_up`.
+7. **Tài liệu triển khai:** Cập nhật README, hướng dẫn kiểm tra và truy cập hệ thống.
 
-Mỗi commit cần chứa các file thay đổi tương ứng và có thông điệp mô tả rõ nội dung công việc.
+Mỗi commit cần có thông điệp rõ ràng và chứa các file thay đổi tương ứng.
 
 ## 12. Kết luận
 
-Dự án kết hợp website WordPress với cơ sở dữ liệu MySQL, reverse proxy, HTTPS, giám sát và quản lý log. Repository lưu trữ mã nguồn cùng cấu hình triển khai để hỗ trợ cài đặt, kiểm tra và phát triển hệ thống.
+Dự án kết hợp website WordPress với MySQL, phpMyAdmin, Nginx HTTPS, Prometheus, MySQL Exporter, Grafana, Loki và Promtail.
+
+Repository lưu trữ mã nguồn và các cấu hình cần thiết, đồng thời cung cấp hướng dẫn triển khai, kiểm tra monitoring, truy vấn metric và truy vấn log.
